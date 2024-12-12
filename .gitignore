@@ -1,1 +1,7 @@
+/debug
 /target
+.idea
+.vscode
+
+*.pdb # Visual Studio debugger files for Windows
+**.*.rs.bk # Rust backup files for Windows
