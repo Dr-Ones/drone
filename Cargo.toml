@@ -1,16 +1,14 @@
 [package]
-name = "Dr-Ones-drone"
-version = "1.0.0"
+name = "dr_ones"
+version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-crossbeam-channel = "0.5"
-rand = "0.8"
-toml = "0.8"
-
-indexmap = "1.7.0"
-
 wg_2024 = { git = "https://github.com/WGL-2024/WGL_repo_2024.git", features = [
     "serialize",
     "debug",
 ] }
+common = { path = "../common" }
+rand = "0.8.5"
+crossbeam-channel = "0.5.0"
+indexmap = "2.7.0"
