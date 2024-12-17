@@ -1,8 +1,22 @@
-# Dr. Ones drone
+# 🚁 Dr. Ones Drone
 
-To include the drone in your project just add this line to your `[dependencies]` in the Cargo.toml: 
+Drone node implementation for the Advanced Programming class at UniTn in 2024/2025.
+
+## Installation
+
+Add this to your `Cargo.toml`:
+
 ```toml
-dr_ones = { git = "https://github.com/Dr-Ones/drone"}
+[dependencies]
+dr_ones = { git = "https://github.com/Dr-Ones/drone" }
 ```
 
-If in doubt, try reaching out at the telegram support channel: https://t.me/Dr_Ones_Customer_Support
+## Testing
+
+```bash
+cargo test
+```
+
+## Support
+
+Need help? Join our Telegram channel: [Dr_Ones_Customer_Support](https://t.me/Dr_Ones_Customer_Support)
