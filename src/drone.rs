@@ -131,21 +131,19 @@ impl Drone {
         // Only one neighbor means we can't forward
     }
 
-    fn handle_routed_packet(&mut self, mut packet: Packet) {
+    fn handle_routed_packet(&mut self, packet: Packet) {
         if !self.verify_routing(&packet) {
             return;
         }
 
-        packet.routing_header.hop_index += 1;
-
         // Handle final destination
-        if packet.routing_header.hop_index == packet.routing_header.hops.len() {
+        if packet.routing_header.hop_index + 1 == packet.routing_header.hops.len() {
             let nack = self.build_nack(packet, NackType::DestinationIsDrone);
             self.forward_packet(nack);
             return;
         }
 
-        let next_hop_id = packet.routing_header.hops[packet.routing_header.hop_index];
+        let next_hop_id = packet.routing_header.hops[packet.routing_header.hop_index + 1];
 
         // Check if next hop is reachable
         if !self.packet_send.contains_key(&next_hop_id) {
@@ -156,7 +154,11 @@ impl Drone {
 
         match packet.pack_type {
             PacketType::MsgFragment(_) => self.handle_message_fragment(packet),
-            _ => self.forward_packet(packet),
+            _ => {
+                let mut forward_packet = packet.clone();
+                forward_packet.routing_header.hop_index += 1;
+                self.forward_packet(forward_packet)
+            }
         }
     }
 
@@ -174,12 +176,35 @@ impl Drone {
 
     fn handle_message_fragment(&mut self, packet: Packet) {
         if self.should_drop_packet() {
+            // Send event before modifying packet
+            if let Err(e) = self
+                .sim_contr_send
+                .send(DroneEvent::PacketDropped(packet.clone()))
+            {
+                log_status(
+                    self.id,
+                    &format!("Failed to send PacketDropped event: {:?}", e),
+                );
+            }
             let nack = self.build_nack(packet, NackType::Dropped);
             self.forward_packet(nack);
             return;
         }
 
-        self.forward_packet(packet);
+        // Increment hop index for forwarding
+        let mut forward_packet = packet.clone();
+        forward_packet.routing_header.hop_index += 1;
+
+        if let Err(e) = self
+            .sim_contr_send
+            .send(DroneEvent::PacketSent(forward_packet.clone()))
+        {
+            log_status(
+                self.id,
+                &format!("Failed to send PacketSent event: {:?}", e),
+            );
+        }
+        self.forward_packet(forward_packet);
     }
 
     fn should_drop_packet(&mut self) -> bool {
@@ -289,7 +314,7 @@ impl Drone {
 
     // TODO: Should be the same in client and server node (handled in handle_routed_packet)
     fn reverse_packet_routing_direction(&self, packet: &mut Packet) {
-        let mut hops = packet.routing_header.hops[..packet.routing_header.hop_index].to_vec();
+        let mut hops = packet.routing_header.hops[..=packet.routing_header.hop_index].to_vec();
         hops.reverse();
 
         packet.routing_header = SourceRoutingHeader { hop_index: 1, hops };
