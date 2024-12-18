@@ -31,7 +31,7 @@ impl NetworkUtils for Drone {
         self.id
     }
 
-    fn get_packet_senders(&self) -> &HashMap<NodeId, Sender<Packet>> {
+    fn get_packet_send(&self) -> &HashMap<NodeId, Sender<Packet>> {
         &self.packet_send
     }
 
@@ -94,7 +94,7 @@ impl Drone {
     // TODO: This implementation should be in the client and server node as well
     fn handle_packet(&mut self, packet: Packet) {
         match packet.pack_type {
-            PacketType::FloodRequest(_) => self.handle_flood_request(packet),
+            PacketType::FloodRequest(_) => self.handle_flood_request(packet, NodeType::Drone),
             _ => self.handle_routed_packet(packet),
         }
     }
