@@ -5,7 +5,7 @@ use common::{log_status, NetworkUtils};
 use crossbeam_channel::{select, Receiver, Sender};
 use indexmap::IndexSet;
 use rand::{rngs::StdRng, Rng, SeedableRng};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use wg_2024::{
     controller::{DroneCommand, DroneEvent},
     network::{NodeId, SourceRoutingHeader},
@@ -21,7 +21,7 @@ pub struct Drone {
     packet_recv: Receiver<Packet>,
     packet_send: HashMap<NodeId, Sender<Packet>>,
     pdr: f32,
-    seen_flood_ids: IndexSet<u64>,
+    seen_flood_ids: HashSet<u64>,
     random_generator: StdRng,
     should_exit: bool,
 }
@@ -42,6 +42,10 @@ impl NetworkUtils for Drone {
     fn get_random_generator(&mut self) -> &mut StdRng {
         &mut self.random_generator
     }
+
+    fn get_seen_flood_ids(&mut self) -> &mut HashSet<u64> {
+        &mut self.seen_flood_ids
+    }
 }
 
 impl wg_2024::drone::Drone for Drone {
@@ -60,7 +64,7 @@ impl wg_2024::drone::Drone for Drone {
             packet_recv,
             packet_send,
             pdr,
-            seen_flood_ids: IndexSet::new(),
+            seen_flood_ids: HashSet::new(),
             random_generator: StdRng::from_entropy(),
             should_exit: false,
         }
@@ -101,32 +105,6 @@ impl Drone {
             DroneCommand::SetPacketDropRate(new_pdr) => self.set_pdr(new_pdr),
             DroneCommand::Crash => self.crash(),
             DroneCommand::RemoveSender(node_id) => self.remove_channel(node_id),
-        }
-    }
-
-    fn handle_flood_request(&mut self, packet: Packet) {
-        if let PacketType::FloodRequest(mut flood_request) = packet.pack_type.clone() {
-            let sender_id = flood_request
-                .path_trace
-                .last()
-                .map(|node| node.0)
-                .unwrap_or_default();
-
-            flood_request.path_trace.push((self.id, NodeType::Drone));
-
-            if self.should_respond_to_flood(&flood_request) {
-                let response = self.build_flood_response(packet, flood_request.path_trace);
-                self.forward_packet(response);
-            } else {
-                self.seen_flood_ids.insert(flood_request.flood_id);
-
-                let updated_packet = Packet {
-                    pack_type: PacketType::FloodRequest(flood_request),
-                    routing_header: packet.routing_header,
-                    session_id: packet.session_id,
-                };
-                self.broadcast_packet(updated_packet, sender_id);
-            }
         }
     }
 
@@ -249,23 +227,6 @@ impl Drone {
         log_status(self.id, "Crashed");
     }
 
-    fn broadcast_packet(&self, packet: Packet, exclude_id: NodeId) {
-        let eligible_neighbors: HashMap<_, _> = self
-            .packet_send
-            .iter()
-            .filter(|(&id, _)| id != exclude_id)
-            .map(|(k, v)| (*k, v.clone()))
-            .collect();
-
-        for (node_id, sender) in eligible_neighbors {
-            if let Err(e) = sender.send(packet.clone()) {
-                log_status(
-                    self.id,
-                    &format!("Failed to send packet to NodeId {:?}: {:?}", node_id, e),
-                );
-            }
-        }
-    }
 
     fn build_nack(&self, packet: Packet, nack_type: NackType) -> Packet {
         let fragment_index = match &packet.pack_type {
@@ -286,34 +247,6 @@ impl Drone {
 
         self.reverse_packet_routing_direction(&mut response);
         response
-    }
-
-    // TODO: Should be the same in client and server node (handled in handle_routed_packet)
-    fn build_flood_response(
-        &mut self,
-        packet: Packet,
-        path_trace: Vec<(NodeId, NodeType)>,
-    ) -> Packet {
-        if let PacketType::FloodRequest(flood_request) = packet.pack_type {
-            let mut route_back: Vec<NodeId> = path_trace.iter().map(|tuple| tuple.0).collect();
-            route_back.reverse();
-
-            let new_routing_header = SourceRoutingHeader {
-                hop_index: 1,
-                hops: route_back,
-            };
-
-            Packet {
-                pack_type: PacketType::FloodResponse(wg_2024::packet::FloodResponse {
-                    flood_id: flood_request.flood_id,
-                    path_trace,
-                }),
-                routing_header: new_routing_header,
-                session_id: self.random_generator.gen(),
-            }
-        } else {
-            panic!("Error! Attempt to build flood response from non-flood request packet");
-        }
     }
 
     // TODO: Should be the same in client and server node (handled in handle_routed_packet)
