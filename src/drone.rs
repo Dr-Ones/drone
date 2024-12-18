@@ -35,6 +35,10 @@ impl NetworkUtils for Drone {
         &self.packet_send
     }
 
+    fn get_packet_receiver(&self) -> &Receiver<Packet> {
+        &self.packet_recv
+    }
+
     fn get_random_generator(&mut self) -> &mut StdRng {
         &mut self.random_generator
     }
