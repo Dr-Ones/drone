@@ -30,7 +30,11 @@ impl NetworkUtils for Dr_One {
     fn get_packet_senders(&self) -> &HashMap<NodeId, Sender<Packet>> {
         &self.packet_send
     }
-    
+
+    fn get_packet_receiver(&self) -> &Receiver<Packet> {
+        &self.packet_recv
+    }
+
     fn get_random_generator(&mut self) -> &mut StdRng {
         &mut self.random_generator
     }
