@@ -5,12 +5,12 @@ use rand::rngs::StdRng;
 use rand::{Rng, SeedableRng};
 use std::collections::HashMap;
 use wg_2024::controller::{DroneCommand, DroneEvent};
-pub use wg_2024::drone::Drone;
+pub use wg_2024::drone::Drone as DroneTrait;
 use wg_2024::network::{NodeId, SourceRoutingHeader};
-use wg_2024::packet::{Nack, NackType, NodeType, Packet, PacketType};
+use wg_2024::packet::{Nack, NackType, NodeType, Packet, PacketType, Ack};
 
 #[allow(non_camel_case_types)]
-pub struct Dr_One {
+pub struct Drone {
     id: NodeId,
     sim_contr_send: Sender<DroneEvent>,
     sim_contr_recv: Receiver<DroneCommand>,
@@ -22,7 +22,7 @@ pub struct Dr_One {
     should_exit:bool,
 }
 
-impl NetworkUtils for Dr_One {
+impl NetworkUtils for Drone {
     fn get_id(&self) -> NodeId {
         self.id
     }
@@ -41,7 +41,7 @@ impl NetworkUtils for Dr_One {
 }
 
 
-impl Drone for Dr_One {
+impl DroneTrait for Drone {
     fn new(
         id: NodeId,
         controller_send: Sender<DroneEvent>,
@@ -68,7 +68,7 @@ impl Drone for Dr_One {
     }
 }
 
-impl Dr_One {
+impl Drone {
     fn run_internal(&mut self) {
         while !self.should_exit {
             select! {
