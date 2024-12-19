@@ -3,7 +3,6 @@
 
 use common::{log_status, NetworkUtils};
 use crossbeam_channel::{select, Receiver, Sender};
-use indexmap::IndexSet;
 use rand::{rngs::StdRng, Rng, SeedableRng};
 use std::collections::{HashMap, HashSet};
 use wg_2024::{
