@@ -42,7 +42,9 @@ impl NetworkUtils for Drone {
         &mut self.random_generator
     }
 
-
+    fn get_seen_flood_ids(&mut self) -> &mut HashSet<u64> {
+        &mut self.seen_flood_ids
+    }
 }
 
 impl wg_2024::drone::Drone for Drone {
@@ -211,10 +213,6 @@ impl Drone {
 
     fn set_pdr(&mut self, new_pdr: f32) {
         self.pdr = new_pdr;
-    }
-    
-    fn get_seen_flood_ids(&mut self) -> &mut HashSet<u64> {
-        &mut self.seen_flood_ids
     }
 
     fn crash(&mut self) {
