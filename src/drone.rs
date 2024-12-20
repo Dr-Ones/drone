@@ -107,11 +107,6 @@ impl Drone {
         }
     }
 
-    fn should_respond_to_flood(&self, flood_request: &wg_2024::packet::FloodRequest) -> bool {
-        self.seen_flood_ids.contains(&flood_request.flood_id) || self.packet_send.len() == 1
-        // Only one neighbor means we can't forward
-    }
-
     fn handle_routed_packet(&mut self, packet: Packet) {
         if !self.verify_routing(&packet) {
             return;
@@ -136,7 +131,7 @@ impl Drone {
         match packet.pack_type {
             PacketType::MsgFragment(_) => self.handle_message_fragment(packet),
             _ => {
-                // TODO: is this meant to work this way???? 
+                // TODO: is this meant to work this way????
                 //  shouldn't the hop index be incremented in the forward_packet function??
                 //  before implementig this directly in the function be sure that there are no cases in which this is not the desired behaviour
                 //  if this gets implemented in the function, be sure to delete every place where the hop index is incremented before calling the function
@@ -230,7 +225,6 @@ impl Drone {
         log_status(self.id, "Crashed");
     }
 
-
     fn build_nack(&self, packet: Packet, nack_type: NackType) -> Packet {
         let fragment_index = match &packet.pack_type {
             PacketType::MsgFragment(fragment) => fragment.fragment_index,
@@ -288,4 +282,3 @@ mod tests {
         assert!(drone.packet_send.is_empty());
     }
 }
-
