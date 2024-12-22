@@ -1,14 +1,14 @@
 //! Drone implementation module.
 //! Handles packet routing, flooding, and network management for drone nodes.
 
-use common::{log_status, ClientCommand, Command, NetworkNode};
+use common::{log_status, Command, NetworkNode};
 use crossbeam_channel::{select, Receiver, Sender};
 use rand::{rngs::StdRng, Rng, SeedableRng};
 use std::collections::{HashMap, HashSet};
 use wg_2024::{
     controller::{DroneCommand, DroneEvent},
     network::NodeId,
-    packet::{NackType, NodeType, Packet, PacketType},
+    packet::{NackType, Packet, PacketType},
 };
 
 /// Implementation of a drone node in the network.
@@ -45,7 +45,7 @@ impl NetworkNode for Drone {
     fn get_seen_flood_ids(&mut self) -> &mut HashSet<u64> {
         &mut self.seen_flood_ids
     }
-    
+
     fn handle_routed_packet(&mut self, packet: Packet) {
         if !self.verify_routing(&packet) {
             return;
@@ -84,10 +84,13 @@ impl NetworkNode for Drone {
     fn handle_command(&mut self, command: Command) {
         unimplemented!();
         // match command {
-        //     DroneCommand::AddSender(node_id, sender) => self.add_channel(node_id, sender),
-        //     DroneCommand::SetPacketDropRate(new_pdr) => self.set_pdr(new_pdr),
-        //     DroneCommand::Crash => self.crash(),
-        //     DroneCommand::RemoveSender(node_id) => self.remove_channel(node_id),
+        //     Command::Drone(command) => match command {
+        //         DroneCommand::AddSender(node_id, sender) => self.add_channel(node_id, sender),
+        //         DroneCommand::SetPacketDropRate(new_pdr) => self.set_pdr(new_pdr),
+        //         DroneCommand::Crash => self.crash(),
+        //         DroneCommand::RemoveSender(node_id) => self.remove_channel(node_id),
+        //     },
+        //     _ => (),
         // }
     }
 }
@@ -127,7 +130,7 @@ impl wg_2024::drone::Drone for Drone {
                 recv(self.sim_contr_recv) -> command_res => {
                     if let Ok(command) = command_res {
                         // TODO: change this implementation to properly use the handle_command function
-                        // self.handle_command(command);
+                        // self.handle_command(Command::Drone(command));
                     }
                 }
             }
@@ -136,9 +139,6 @@ impl wg_2024::drone::Drone for Drone {
 }
 
 impl Drone {
-
-
-
     fn verify_routing(&mut self, packet: &Packet) -> bool {
         let index = packet.routing_header.hop_index;
         if self.id != packet.routing_header.hops[index] {
@@ -203,7 +203,6 @@ impl Drone {
         self.should_exit = true;
         log_status(self.id, "Crashed");
     }
-
 }
 
 #[cfg(test)]
