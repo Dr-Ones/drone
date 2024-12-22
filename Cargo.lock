@@ -17,7 +17,7 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 [[package]]
 name = "common"
 version = "0.1.0"
-source = "git+https://github.com/Dr-Ones/common.git#16d4f437493247beabeefdafe2a1391774cc1ed4"
+source = "git+https://github.com/Dr-Ones/common.git#b60ed09b1afce8cd4d9e08accec9605dc633a09d"
 dependencies = [
  "crossbeam-channel",
  "indexmap",

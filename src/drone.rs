@@ -1,7 +1,7 @@
 //! Drone implementation module.
 //! Handles packet routing, flooding, and network management for drone nodes.
 
-use common::{log_status, NetworkNode};
+use common::{log_status, ClientCommand, Command, NetworkNode};
 use crossbeam_channel::{select, Receiver, Sender};
 use rand::{rngs::StdRng, Rng, SeedableRng};
 use std::collections::{HashMap, HashSet};
@@ -80,6 +80,16 @@ impl NetworkNode for Drone {
             }
         }
     }
+
+    fn handle_command(&mut self, command: Command) {
+        unimplemented!();
+        // match command {
+        //     DroneCommand::AddSender(node_id, sender) => self.add_channel(node_id, sender),
+        //     DroneCommand::SetPacketDropRate(new_pdr) => self.set_pdr(new_pdr),
+        //     DroneCommand::Crash => self.crash(),
+        //     DroneCommand::RemoveSender(node_id) => self.remove_channel(node_id),
+        // }
+    }
 }
 
 impl wg_2024::drone::Drone for Drone {
@@ -116,7 +126,8 @@ impl wg_2024::drone::Drone for Drone {
 
                 recv(self.sim_contr_recv) -> command_res => {
                     if let Ok(command) = command_res {
-                        self.handle_command(command);
+                        // TODO: change this implementation to properly use the handle_command function
+                        // self.handle_command(command);
                     }
                 }
             }
@@ -126,14 +137,6 @@ impl wg_2024::drone::Drone for Drone {
 
 impl Drone {
 
-    fn handle_command(&mut self, command: DroneCommand) {
-        match command {
-            DroneCommand::AddSender(node_id, sender) => self.add_channel(node_id, sender),
-            DroneCommand::SetPacketDropRate(new_pdr) => self.set_pdr(new_pdr),
-            DroneCommand::Crash => self.crash(),
-            DroneCommand::RemoveSender(node_id) => self.remove_channel(node_id),
-        }
-    }
 
 
     fn verify_routing(&mut self, packet: &Packet) -> bool {
