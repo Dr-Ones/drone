@@ -8,7 +8,7 @@ use std::collections::{HashMap, HashSet};
 use wg_2024::{
     controller::{DroneCommand, DroneEvent},
     network::NodeId,
-    packet::{Nack, NackType, NodeType, Packet, PacketType},
+    packet::{NackType, NodeType, Packet, PacketType},
 };
 
 /// Implementation of a drone node in the network.
@@ -44,6 +44,41 @@ impl NetworkNode for Drone {
 
     fn get_seen_flood_ids(&mut self) -> &mut HashSet<u64> {
         &mut self.seen_flood_ids
+    }
+    
+    fn handle_routed_packet(&mut self, packet: Packet) {
+        if !self.verify_routing(&packet) {
+            return;
+        }
+
+        // Handle final destination
+        if packet.routing_header.hop_index + 1 == packet.routing_header.hops.len() {
+            let nack = self.build_nack(packet, NackType::DestinationIsDrone);
+            self.forward_packet(nack);
+            return;
+        }
+
+        let next_hop_id = packet.routing_header.hops[packet.routing_header.hop_index + 1];
+
+        // Check if next hop is reachable
+        if !self.packet_send.contains_key(&next_hop_id) {
+            let nack = self.build_nack(packet, NackType::ErrorInRouting(next_hop_id));
+            self.forward_packet(nack);
+            return;
+        }
+
+        match packet.pack_type {
+            PacketType::MsgFragment(_) => self.handle_message_fragment(packet),
+            _ => {
+                // TODO: is this meant to work this way????
+                //  shouldn't the hop index be incremented in the forward_packet function??
+                //  before implementig this directly in the function be sure that there are no cases in which this is not the desired behaviour
+                //  if this gets implemented in the function, be sure to delete every place where the hop index is incremented before calling the function
+                let mut forward_packet = packet.clone();
+                forward_packet.routing_header.hop_index += 1;
+                self.forward_packet(forward_packet)
+            }
+        }
     }
 }
 
@@ -90,13 +125,6 @@ impl wg_2024::drone::Drone for Drone {
 }
 
 impl Drone {
-    // TODO: This implementation should be in the client and server node as well
-    fn handle_packet(&mut self, packet: Packet) {
-        match packet.pack_type {
-            PacketType::FloodRequest(_) => self.handle_flood_request(packet, NodeType::Drone),
-            _ => self.handle_routed_packet(packet),
-        }
-    }
 
     fn handle_command(&mut self, command: DroneCommand) {
         match command {
@@ -107,40 +135,6 @@ impl Drone {
         }
     }
 
-    fn handle_routed_packet(&mut self, packet: Packet) {
-        if !self.verify_routing(&packet) {
-            return;
-        }
-
-        // Handle final destination
-        if packet.routing_header.hop_index + 1 == packet.routing_header.hops.len() {
-            let nack = self.build_nack(packet, NackType::DestinationIsDrone);
-            self.forward_packet(nack);
-            return;
-        }
-
-        let next_hop_id = packet.routing_header.hops[packet.routing_header.hop_index + 1];
-
-        // Check if next hop is reachable
-        if !self.packet_send.contains_key(&next_hop_id) {
-            let nack = self.build_nack(packet, NackType::ErrorInRouting(next_hop_id));
-            self.forward_packet(nack);
-            return;
-        }
-
-        match packet.pack_type {
-            PacketType::MsgFragment(_) => self.handle_message_fragment(packet),
-            _ => {
-                // TODO: is this meant to work this way????
-                //  shouldn't the hop index be incremented in the forward_packet function??
-                //  before implementig this directly in the function be sure that there are no cases in which this is not the desired behaviour
-                //  if this gets implemented in the function, be sure to delete every place where the hop index is incremented before calling the function
-                let mut forward_packet = packet.clone();
-                forward_packet.routing_header.hop_index += 1;
-                self.forward_packet(forward_packet)
-            }
-        }
-    }
 
     fn verify_routing(&mut self, packet: &Packet) -> bool {
         let index = packet.routing_header.hop_index;
@@ -190,24 +184,6 @@ impl Drone {
     fn should_drop_packet(&mut self) -> bool {
         let pdr_scaled = (self.pdr * 100.0) as i32;
         self.get_random_generator().gen_range(0..=100) < pdr_scaled
-    }
-
-    fn add_channel(&mut self, id: NodeId, sender: Sender<Packet>) {
-        self.packet_send.insert(id, sender);
-    }
-
-    fn remove_channel(&mut self, id: NodeId) {
-        if !self.packet_send.contains_key(&id) {
-            log_status(
-                self.id,
-                &format!(
-                    "Error! The current node {} has no neighbour node {}.",
-                    self.id, id
-                ),
-            );
-            return;
-        }
-        self.packet_send.remove(&id);
     }
 
     fn set_pdr(&mut self, new_pdr: f32) {
