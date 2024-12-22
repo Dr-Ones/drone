@@ -1,13 +1,13 @@
 //! Drone implementation module.
 //! Handles packet routing, flooding, and network management for drone nodes.
 
-use common::{log_status, NetworkUtils};
+use common::{log_status, NetworkNode};
 use crossbeam_channel::{select, Receiver, Sender};
 use rand::{rngs::StdRng, Rng, SeedableRng};
 use std::collections::{HashMap, HashSet};
 use wg_2024::{
     controller::{DroneCommand, DroneEvent},
-    network::{NodeId, SourceRoutingHeader},
+    network::NodeId,
     packet::{Nack, NackType, NodeType, Packet, PacketType},
 };
 
@@ -25,7 +25,7 @@ pub struct Drone {
     should_exit: bool,
 }
 
-impl NetworkUtils for Drone {
+impl NetworkNode for Drone {
     fn get_id(&self) -> NodeId {
         self.id
     }
@@ -244,14 +244,6 @@ impl Drone {
 
         self.reverse_packet_routing_direction(&mut response);
         response
-    }
-
-    // TODO: Should be the same in client and server node (handled in handle_routed_packet)
-    fn reverse_packet_routing_direction(&self, packet: &mut Packet) {
-        let mut hops = packet.routing_header.hops[..=packet.routing_header.hop_index].to_vec();
-        hops.reverse();
-
-        packet.routing_header = SourceRoutingHeader { hop_index: 1, hops };
     }
 }
 
