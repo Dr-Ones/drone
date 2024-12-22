@@ -225,26 +225,6 @@ impl Drone {
         log_status(self.id, "Crashed");
     }
 
-    fn build_nack(&self, packet: Packet, nack_type: NackType) -> Packet {
-        let fragment_index = match &packet.pack_type {
-            PacketType::MsgFragment(fragment) => fragment.fragment_index,
-            _ => 0,
-        };
-
-        let nack = Nack {
-            fragment_index,
-            nack_type,
-        };
-
-        let mut response = Packet {
-            pack_type: PacketType::Nack(nack),
-            routing_header: packet.routing_header,
-            session_id: packet.session_id,
-        };
-
-        self.reverse_packet_routing_direction(&mut response);
-        response
-    }
 }
 
 #[cfg(test)]
