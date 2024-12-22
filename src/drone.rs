@@ -76,6 +76,17 @@ impl NetworkNode for Drone {
                 //  if this gets implemented in the function, be sure to delete every place where the hop index is incremented before calling the function
                 let mut forward_packet = packet.clone();
                 forward_packet.routing_header.hop_index += 1;
+
+                // Send PacketSent event for non-fragment packets too
+                if let Err(e) = self
+                    .sim_contr_send
+                    .send(DroneEvent::PacketSent(forward_packet.clone()))
+                {
+                    log_status(
+                        self.id,
+                        &format!("Failed to send PacketSent event: {:?}", e),
+                    );
+                }
                 self.forward_packet(forward_packet)
             }
         }
