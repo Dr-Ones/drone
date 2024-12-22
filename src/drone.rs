@@ -30,8 +30,8 @@ impl NetworkNode for Drone {
         self.id
     }
 
-    fn get_packet_send(&self) -> &HashMap<NodeId, Sender<Packet>> {
-        &self.packet_send
+    fn get_packet_send(&mut self) -> &mut HashMap<NodeId, Sender<Packet>> {
+        &mut self.packet_send
     }
 
     fn get_packet_receiver(&self) -> &Receiver<Packet> {
