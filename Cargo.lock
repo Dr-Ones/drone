@@ -15,17 +15,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
-name = "common"
-version = "0.1.0"
-source = "git+https://github.com/Dr-Ones/common.git#b60ed09b1afce8cd4d9e08accec9605dc633a09d"
-dependencies = [
- "crossbeam-channel",
- "indexmap",
- "rand",
- "wg_2024",
-]
-
-[[package]]
 name = "crossbeam-channel"
 version = "0.5.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -44,9 +33,9 @@ checksum = "d0a5c400df2834b80a4c3327b3aad3a4c4cd4de0629063962b03235697506a28"
 name = "dr_ones"
 version = "0.1.0"
 dependencies = [
- "common",
  "crossbeam-channel",
  "indexmap",
+ "network_node",
  "rand",
  "wg_2024",
 ]
@@ -89,6 +78,17 @@ name = "libc"
 version = "0.2.169"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b5aba8db14291edd000dfcc4d620c7ebfb122c613afb886ca8803fa4e128a20a"
+
+[[package]]
+name = "network_node"
+version = "0.1.0"
+source = "git+https://github.com/Dr-Ones/common.git#61f4ae8625612f1dbaab1e57dc2537650e84151a"
+dependencies = [
+ "crossbeam-channel",
+ "indexmap",
+ "rand",
+ "wg_2024",
+]
 
 [[package]]
 name = "ppv-lite86"

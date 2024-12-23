@@ -1,7 +1,7 @@
 //! Drone implementation module.
 //! Handles packet routing, flooding, and network management for drone nodes.
 
-use common::{log_status, Command, NetworkNode};
+use network_node::{log_status, Command, NetworkNode};
 use crossbeam_channel::{select, Receiver, Sender};
 use rand::{rngs::StdRng, Rng, SeedableRng};
 use std::collections::{HashMap, HashSet};
