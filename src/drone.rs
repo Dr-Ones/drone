@@ -30,6 +30,10 @@ impl NetworkNode for Drone {
         self.id
     }
 
+    fn get_seen_flood_ids(&mut self) -> &mut HashSet<u64> {
+        &mut self.seen_flood_ids
+    }
+
     fn get_packet_send(&mut self) -> &mut HashMap<NodeId, Sender<Packet>> {
         &mut self.packet_send
     }
@@ -40,10 +44,6 @@ impl NetworkNode for Drone {
 
     fn get_random_generator(&mut self) -> &mut StdRng {
         &mut self.random_generator
-    }
-
-    fn get_seen_flood_ids(&mut self) -> &mut HashSet<u64> {
-        &mut self.seen_flood_ids
     }
 
     fn handle_routed_packet(&mut self, packet: Packet) {
@@ -140,7 +140,7 @@ impl wg_2024::drone::Drone for Drone {
                 },
                 recv(self.packet_recv) -> packet_res => {
                     if let Ok(packet) = packet_res {
-                        self.handle_packet(packet);
+                        self.handle_packet(packet, NodeType::Drone);
                     }
                 }
             }
