@@ -8,7 +8,7 @@ use std::collections::{HashMap, HashSet};
 use wg_2024::{
     controller::{DroneCommand, DroneEvent},
     network::NodeId,
-    packet::{NackType, Packet, PacketType},
+    packet::{NodeType, NackType, Packet, PacketType},
 };
 
 /// Implementation of a drone node in the network.
