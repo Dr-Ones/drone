@@ -103,10 +103,11 @@ impl NetworkNode for Drone {
                 },
                 _ => (),
             }
+        } else {
+            panic!("Drone {} received a wrong command type", self.get_id());
         }
     }
 
-    
 }
 
 impl wg_2024::drone::Drone for Drone {
@@ -135,16 +136,14 @@ impl wg_2024::drone::Drone for Drone {
     fn run(&mut self) {
         while !self.should_exit {
             select! {
+                recv(self.sim_contr_recv) -> command_res => {
+                    if let Ok(command) = command_res {
+                        self.handle_command(Command::Drone(command));
+                    }
+                },
                 recv(self.packet_recv) -> packet_res => {
                     if let Ok(packet) = packet_res {
                         self.handle_packet(packet);
-                    }
-                },
-
-                recv(self.sim_contr_recv) -> command_res => {
-                    if let Ok(command) = command_res {
-                        // TODO: change this implementation to properly use the handle_command function
-                        // self.handle_command(Command::Drone(command));
                     }
                 }
             }
