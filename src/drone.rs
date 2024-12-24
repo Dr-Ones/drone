@@ -207,7 +207,7 @@ impl Drone {
         log_status(self.id, "Starting crash sequence");
 
         while let Ok(packet) = self.packet_recv.try_recv() {
-            self.handle_packet(packet);
+            self.handle_packet(packet, NodeType::Client);
         }
 
         self.should_exit = true;
