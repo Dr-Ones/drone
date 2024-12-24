@@ -93,18 +93,14 @@ impl NetworkNode for Drone {
     }
 
     fn handle_command(&mut self, command: Command) {
-        if let Command::Drone(command) = command {
-            match command {
-                Command::Drone(command) => match command {
-                    DroneCommand::AddSender(node_id, sender) => self.add_channel(node_id, sender),
-                    DroneCommand::SetPacketDropRate(new_pdr) => self.set_pdr(new_pdr),
-                    DroneCommand::Crash => self.crash(),
-                    DroneCommand::RemoveSender(node_id) => self.remove_channel(node_id),
-                },
-                _ => (),
-            }
-        } else {
-            panic!("Drone {} received a wrong command type", self.get_id());
+        match command {
+            Command::Drone(drone_command) => match drone_command {
+                DroneCommand::AddSender(node_id, sender) => self.add_channel(node_id, sender),
+                DroneCommand::SetPacketDropRate(new_pdr) => self.set_pdr(new_pdr),
+                DroneCommand::Crash => self.crash(),
+                DroneCommand::RemoveSender(node_id) => self.remove_channel(node_id),
+            },
+            _ => panic!("Drone {} received a wrong command type", self.get_id()),
         }
     }
 
@@ -137,8 +133,9 @@ impl wg_2024::drone::Drone for Drone {
         while !self.should_exit {
             select! {
                 recv(self.sim_contr_recv) -> command_res => {
-                    if let Ok(command) = command_res {
-                        self.handle_command(Command::Drone(command));
+                    if let Ok(drone_command) = command_res {
+                        let command = Command::Drone(drone_command);
+                        self.handle_command(command);
                     }
                 },
                 recv(self.packet_recv) -> packet_res => {
