@@ -93,17 +93,20 @@ impl NetworkNode for Drone {
     }
 
     fn handle_command(&mut self, command: Command) {
-        unimplemented!();
-        // match command {
-        //     Command::Drone(command) => match command {
-        //         DroneCommand::AddSender(node_id, sender) => self.add_channel(node_id, sender),
-        //         DroneCommand::SetPacketDropRate(new_pdr) => self.set_pdr(new_pdr),
-        //         DroneCommand::Crash => self.crash(),
-        //         DroneCommand::RemoveSender(node_id) => self.remove_channel(node_id),
-        //     },
-        //     _ => (),
-        // }
+        if let Command::Drone(command) = command {
+            match command {
+                Command::Drone(command) => match command {
+                    DroneCommand::AddSender(node_id, sender) => self.add_channel(node_id, sender),
+                    DroneCommand::SetPacketDropRate(new_pdr) => self.set_pdr(new_pdr),
+                    DroneCommand::Crash => self.crash(),
+                    DroneCommand::RemoveSender(node_id) => self.remove_channel(node_id),
+                },
+                _ => (),
+            }
+        }
     }
+
+    
 }
 
 impl wg_2024::drone::Drone for Drone {
