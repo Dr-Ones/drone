@@ -161,6 +161,7 @@ impl Drone {
         true
     }
 
+    // Handling a message fragment for a drone is very different from the behaviour that a client or a server would have
     fn handle_message_fragment(&mut self, packet: Packet) {
         if self.should_drop_packet() {
             // Send event before modifying packet
