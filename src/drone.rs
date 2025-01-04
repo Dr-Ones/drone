@@ -22,12 +22,17 @@ pub struct Drone {
     pdr: f32,
     seen_flood_ids: HashSet<u64>,
     random_generator: StdRng,
+    crashing_behavior: bool,
     should_exit: bool,
 }
 
 impl NetworkNode for Drone {
     fn get_id(&self) -> NodeId {
         self.id
+    }
+
+    fn get_crashing_behavior(&self) -> bool {
+        self.crashing_behavior
     }
 
     fn get_seen_flood_ids(&mut self) -> &mut HashSet<u64> {
@@ -46,9 +51,9 @@ impl NetworkNode for Drone {
         &mut self.random_generator
     }
 
-    fn handle_routed_packet(&mut self, packet: Packet) {
+    fn handle_routed_packet(&mut self, packet: Packet) -> bool {
         if !self.verify_routing(&packet) {
-            return;
+            return false;
         }
 
         // Handle final destination
@@ -56,6 +61,7 @@ impl NetworkNode for Drone {
             if matches!(packet.pack_type, PacketType::MsgFragment(_)) {
                 let nack = self.build_nack(packet, NackType::DestinationIsDrone);
                 self.forward_packet(nack);
+                return true;
             } else {
                 if let Err(e) = self
                     .sim_contr_send
@@ -67,9 +73,8 @@ impl NetworkNode for Drone {
                     );
                 }
                 self.forward_packet(packet);
+                return false;
             }
-
-            return;
         }
 
         let next_hop_id = packet.routing_header.hops[packet.routing_header.hop_index + 1];
@@ -100,11 +105,20 @@ impl NetworkNode for Drone {
 
                 self.forward_packet(nack_packet);
             }
-            return;
+            return false;
         }
 
         match packet.pack_type {
-            PacketType::MsgFragment(_) => self.handle_message_fragment(packet),
+            PacketType::MsgFragment(_) => {
+                if self.crashing_behavior {
+                    let nack = self.build_nack(packet, NackType::ErrorInRouting(self.get_id()));
+                    self.forward_packet(nack);
+                    return true;
+                } else {
+                    self.handle_message_fragment(packet);
+                    return false;
+                }
+            }
             _ => {
                 // TODO: is this meant to work this way????
                 //  shouldn't the hop index be incremented in the forward_packet function??
@@ -123,7 +137,8 @@ impl NetworkNode for Drone {
                         &format!("Failed to send PacketSent event: {:?}", e),
                     );
                 }
-                self.forward_packet(forward_packet)
+                self.forward_packet(forward_packet);
+                false
             }
         }
     }
@@ -160,6 +175,7 @@ impl wg_2024::drone::Drone for Drone {
             seen_flood_ids: HashSet::new(),
             random_generator: StdRng::from_entropy(),
             should_exit: false,
+            crashing_behavior: false,
         }
     }
 
@@ -175,7 +191,7 @@ impl wg_2024::drone::Drone for Drone {
                 },
                 recv(self.packet_recv) -> packet_res => {
                     if let Ok(packet) = packet_res {
-                        self.handle_packet(packet, NodeType::Drone);
+                        self.should_exit = self.handle_packet(packet, NodeType::Drone);
                     }
                 }
             }
@@ -263,10 +279,10 @@ impl Drone {
         log_status(self.id, "Starting crash sequence");
 
         while let Ok(packet) = self.packet_recv.try_recv() {
-            self.handle_packet(packet, NodeType::Client);
+            self.handle_packet(packet, NodeType::Drone);
         }
 
-        self.should_exit = true;
+        self.crashing_behavior = true;
         log_status(self.id, "Crashed");
     }
 }

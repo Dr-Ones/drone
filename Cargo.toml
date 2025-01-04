@@ -11,4 +11,5 @@ wg_2024 = { git = "https://github.com/WGL-2024/WGL_repo_2024.git", features = [
 network_node = { git = "https://github.com/Dr-Ones/common.git" }
 rand = "0.8.5"
 crossbeam-channel = "0.5.0"
-indexmap = "2.7.0"
+
+rusty_tester = { git = "https://github.com/rusty-drone-2024/rusty-tester.git", branch = "main" }
