@@ -2,7 +2,7 @@
 //! Handles packet routing, flooding, and network management for drone nodes.
 
 use crossbeam_channel::{select_biased, Receiver, Sender};
-use network_node::{log_status, Command, NetworkNode};
+use network_node::{Command, NetworkNode};
 use rand::{rngs::StdRng, Rng, SeedableRng};
 use std::collections::{HashMap, HashSet};
 use wg_2024::{
