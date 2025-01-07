@@ -2,7 +2,7 @@
 //! Handles packet routing, flooding, and network management for drone nodes.
 
 use crossbeam_channel::{select_biased, Receiver, Sender};
-use network_node::{Command, NetworkNode};
+use network_node::{log_error, log_status, Command, NetworkNode};
 use rand::{rngs::StdRng, Rng, SeedableRng};
 use std::collections::{HashMap, HashSet};
 use wg_2024::{
@@ -67,10 +67,7 @@ impl NetworkNode for Drone {
                     .sim_contr_send
                     .send(DroneEvent::ControllerShortcut(packet.clone()))
                 {
-                    log_status(
-                        self.id,
-                        &format!("Failed to send ControllerShortcut event: {:?}", e),
-                    );
+                    log_error!(self.id, "Failed to send ControllerShortcut event: {:?}", e);
                 }
                 self.forward_packet(packet);
                 return false;
@@ -132,10 +129,7 @@ impl NetworkNode for Drone {
                     .sim_contr_send
                     .send(DroneEvent::PacketSent(forward_packet.clone()))
                 {
-                    log_status(
-                        self.id,
-                        &format!("Failed to send PacketSent event: {:?}", e),
-                    );
+                    log_error!(self.id, "Failed to send PacketSent event: {:?}", e);
                 }
                 self.forward_packet(forward_packet);
                 false
@@ -220,10 +214,7 @@ impl Drone {
                 .sim_contr_send
                 .send(DroneEvent::PacketDropped(packet.clone()))
             {
-                log_status(
-                    self.id,
-                    &format!("Failed to send PacketDropped event: {:?}", e),
-                );
+                log_error!(self.id, "Failed to send PacketDropped event: {:?}", e);
             }
 
             // Build NACK for dropped packet
@@ -258,10 +249,7 @@ impl Drone {
             .sim_contr_send
             .send(DroneEvent::PacketSent(forward_packet.clone()))
         {
-            log_status(
-                self.id,
-                &format!("Failed to send PacketSent event: {:?}", e),
-            );
+            log_error!(self.id, "Failed to send PacketSent event: {:?}", e);
         }
         self.forward_packet(forward_packet);
     }
@@ -276,14 +264,14 @@ impl Drone {
     }
 
     fn crash(&mut self) {
-        log_status(self.id, "Starting crash sequence");
+        log_status!(self.id, "Starting crash sequence");
 
         while let Ok(packet) = self.packet_recv.try_recv() {
             self.handle_packet(packet, NodeType::Drone);
         }
 
         self.crashing_behavior = true;
-        log_status(self.id, "Crashed");
+        log_status!(self.id, "Crashed");
     }
 }
 
