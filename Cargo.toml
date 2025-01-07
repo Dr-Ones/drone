@@ -4,12 +4,11 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+rand = "0.8.5"
+crossbeam-channel = "0.5.0"
 wg_2024 = { git = "https://github.com/WGL-2024/WGL_repo_2024.git", features = [
     "serialize",
     "debug",
 ] }
-network_node = { git = "https://github.com/Dr-Ones/common.git" }
-rand = "0.8.5"
-crossbeam-channel = "0.5.0"
-
 rusty_tester = { git = "https://github.com/rusty-drone-2024/rusty-tester.git", branch = "main" }
+network_node = { path = "../network_node" }
