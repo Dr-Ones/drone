@@ -11,6 +11,20 @@ Add this to your `Cargo.toml`:
 dr_ones = { git = "https://github.com/Dr-Ones/drone" }
 ```
 
+## Usage
+
+### Logging Control
+
+You can enable or disable logging output globally:
+
+```rust
+// Disable all node logging (useful for tests or high-load scenarios)
+dr_ones::disable_logging();
+
+// Re-enable logging when needed
+dr_ones::enable_logging();
+```
+
 ## Testing
 
 ```bash
