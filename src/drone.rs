@@ -265,12 +265,13 @@ impl Drone {
 
     fn crash(&mut self) {
         log_status!(self.id, "Starting crash sequence");
+        self.crashing_behavior = true;
 
         while let Ok(packet) = self.packet_recv.try_recv() {
             self.handle_packet(packet, NodeType::Drone);
         }
 
-        self.crashing_behavior = true;
+        self.should_exit = true;
         log_status!(self.id, "Crashed");
     }
 }
