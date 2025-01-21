@@ -135,7 +135,7 @@ dependencies = [
 [[package]]
 name = "rusty_tester"
 version = "0.0.0"
-source = "git+https://github.com/rusty-drone-2024/rusty-tester.git?branch=main#773987323081bcb29d87f61cde4f54109e44a8ae"
+source = "git+https://github.com/rusty-drone-2024/rusty-tester.git?branch=main#758b02dbd2757f886bc7920f2b307bd5df2a39dd"
 dependencies = [
  "crossbeam-channel",
  "wg_2024",
