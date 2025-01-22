@@ -14,3 +14,6 @@ network_node = { git = "https://github.com/Dr-Ones/common.git" }
 
 [dev-dependencies]
 rusty_tester = { git = "https://github.com/rusty-drone-2024/rusty-tester.git", branch = "main" }
+
+[features]
+disable_log_by_default=["network_node/disable_log_by_default"]
