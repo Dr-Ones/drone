@@ -958,7 +958,7 @@ dependencies = [
 [[package]]
 name = "network_node"
 version = "0.1.0"
-source = "git+https://github.com/Dr-Ones/common.git#097e24ac0a6c8d400e701ad93d4b27539dcfea56"
+source = "git+https://github.com/Dr-Ones/common.git#cb76dfe6a8e9e5447b3a5064f199836b1344bcec"
 dependencies = [
  "crossbeam-channel",
  "once_cell",
