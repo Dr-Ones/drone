@@ -10,6 +10,26 @@ wg_2024 = { git = "https://github.com/WGL-2024/WGL_repo_2024.git", features = [
     "serialize",
     "debug",
 ] }
+
+
+null-pointer-drone = { git = "https://github.com/The-Null-Pointer-Patrol/null-pointer-drone.git"}
+rusty_drones = { git = "https://github.com/rusty-drone-2024/rusty-drone.git" }
+rustafarian-drone= { git = "https://github.com/Rustafarian-Unitn/rustafarian-drone"}
+rusteze_drone= { git = "https://github.com/Rusteze-AP/drone.git", branch = "main" }
+
+flexi_logger = "0.29.6"
+log = "0.4"
+getdroned = { git = "https://github.com/GetDroned/Drone.git"} 
+
+rustbusters-drone= { git = "https://github.com/Rustbusters/drone.git" }
+d-r-o-n-e_drone = { git = "https://github.com/AP-2024-25-D-R-O-N-E/drone.git" }
+lockheedrustin-drone = { git = "https://github.com/Lockheed-Rustin/drone.git" }
+ap2024_unitn_cppenjoyers_drone = { git = "https://github.com/Cpp-enjoyers/drone.git", features =  ["unlimited_buffer"] }
+fungi_drone = { git = "https://github.com/Fungi-B-D/Fungi-Drone.git" }
+
+
+
+
 network_node = { git = "https://github.com/Dr-Ones/common.git" }
 
 [dev-dependencies]
