@@ -20,7 +20,7 @@ pub struct Drone {
     packet_recv: Receiver<Packet>,
     packet_send: HashMap<NodeId, Sender<Packet>>,
     pdr: f32,
-    seen_flood_ids: HashSet<u64>,
+    seen_flood_ids: HashSet<String>,
     random_generator: StdRng,
     crashing_behavior: bool,
     should_exit: bool,
@@ -35,7 +35,7 @@ impl NetworkNode for Drone {
         self.crashing_behavior
     }
 
-    fn get_seen_flood_ids(&mut self) -> &mut HashSet<u64> {
+    fn get_seen_flood_ids(&mut self) -> &mut HashSet<String> {
         &mut self.seen_flood_ids
     }
 
