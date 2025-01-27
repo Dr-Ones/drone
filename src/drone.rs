@@ -51,6 +51,10 @@ impl NetworkNode for Drone {
         &mut self.random_generator
     }
 
+    fn get_sim_contr_send(&self) -> &Sender<DroneEvent> {
+        &self.sim_contr_send
+    }
+
     fn handle_routed_packet(&mut self, packet: Packet) -> bool {
         if !self.verify_routing(&packet) {
             return false;
@@ -124,13 +128,6 @@ impl NetworkNode for Drone {
                 let mut forward_packet = packet.clone();
                 forward_packet.routing_header.hop_index += 1;
 
-                // Send PacketSent event for non-fragment packets too
-                if let Err(e) = self
-                    .sim_contr_send
-                    .send(DroneEvent::PacketSent(forward_packet.clone()))
-                {
-                    log_error!(self.id, "Failed to send PacketSent event: {:?}", e);
-                }
                 self.forward_packet(forward_packet);
                 false
             }
@@ -245,12 +242,6 @@ impl Drone {
         let mut forward_packet = packet.clone();
         forward_packet.routing_header.hop_index += 1;
 
-        if let Err(e) = self
-            .sim_contr_send
-            .send(DroneEvent::PacketSent(forward_packet.clone()))
-        {
-            log_error!(self.id, "Failed to send PacketSent event: {:?}", e);
-        }
         self.forward_packet(forward_packet);
     }
 
