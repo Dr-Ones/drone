@@ -1239,7 +1239,7 @@ dependencies = [
 [[package]]
 name = "rustbusters-drone"
 version = "1.0.0"
-source = "git+https://github.com/Rustbusters/drone.git#f798c5243fb7703ce0cc384773b99f8f2ac8f268"
+source = "git+https://github.com/Rustbusters/drone.git#98b30e3cc16b6211687a8caf2c24ee7d6f5ef73a"
 dependencies = [
  "crossbeam-channel",
  "lazy_static",
