@@ -251,6 +251,10 @@ impl Drone {
     }
 
     fn set_pdr(&mut self, new_pdr: f32) {
+        if new_pdr < 0.0 || new_pdr > 1.0 {
+            log_error!(self.id, "invalid PDR value: {}", new_pdr);
+            return;
+        }
         self.pdr = new_pdr;
     }
 

@@ -135,7 +135,7 @@ dependencies = [
 [[package]]
 name = "rusty_tester"
 version = "0.0.0"
-source = "git+https://github.com/rusty-drone-2024/rusty-tester.git?branch=main#393da9161a71cc6713de62a334130994c5194716"
+source = "git+https://github.com/rusty-drone-2024/rusty-tester.git?branch=main#5a9b325e6eb6696e49c0dd25f663b049a9e2b8dd"
 dependencies = [
  "crossbeam-channel",
  "wg_2024",
@@ -174,9 +174,9 @@ dependencies = [
 
 [[package]]
 name = "unicode-ident"
-version = "1.0.15"
+version = "1.0.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "11cd88e12b17c6494200a9c1b683a04fcac9573ed74cd1b62aeb2727c5592243"
+checksum = "a210d160f08b701c8721ba1c726c11662f877ea6b7094007e1ca9a1041945034"
 
 [[package]]
 name = "wasi"
