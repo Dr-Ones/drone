@@ -36,7 +36,6 @@ dependencies = [
  "crossbeam-channel",
  "network_node",
  "rand",
- "rusty_tester",
  "wg_2024",
 ]
 
@@ -130,15 +129,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ec0be4795e2f6a28069bec0b5ff3e2ac9bafc99e6a9a7dc3547996c5c816922c"
 dependencies = [
  "getrandom",
-]
-
-[[package]]
-name = "rusty_tester"
-version = "0.0.0"
-source = "git+https://github.com/rusty-drone-2024/rusty-tester.git?branch=main#5a9b325e6eb6696e49c0dd25f663b049a9e2b8dd"
-dependencies = [
- "crossbeam-channel",
- "wg_2024",
 ]
 
 [[package]]
