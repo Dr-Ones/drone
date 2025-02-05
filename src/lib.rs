@@ -15,4 +15,4 @@ mod drone;
 pub use drone::Drone;
 
 // Re-export logging control functions
-pub use network_node::{disable_logging, enable_logging};
+pub use network_node::{disable_logging, enable_logging, redirect_logs_to_file};
