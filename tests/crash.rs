@@ -76,20 +76,20 @@ fn generic_drone_crash<T: Drone + Send + 'static>() {
 
     // Send a RemoveSender to d before crashing d2
     let remove_sender_command = DroneCommand::RemoveSender(12);
-    d_command_send.send(remove_sender_command).unwrap();
+    d_command_send.send(remove_sender_command).expect("Failed to send RemoveSender command");
 
     // Send a crash command to d2
     let crash_command = DroneCommand::Crash;
-    d2_command_send.send(crash_command).unwrap();
+    d2_command_send.send(crash_command).expect("Failed to send Crash command");
 
     let msg = create_sample_packet();
 
     // "Client" sends packet to the drone
-    d_send.send(msg.clone()).unwrap();
+    d_send.send(msg.clone()).expect("Failed to send packet to the drone");
 
     // Client should receive a NACK since d2 has crashed and is unreachable
     assert_eq!(
-        c_recv.recv().unwrap(),
+        c_recv.recv().expect("Failed to receive packet"),
         Packet {
             pack_type: PacketType::Nack(Nack {
                 nack_type: NackType::ErrorInRouting(12),
