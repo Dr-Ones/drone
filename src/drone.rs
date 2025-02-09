@@ -27,34 +27,45 @@ pub struct Drone {
 }
 
 impl NetworkNode for Drone {
+    /// Returns the unique identifier of the drone node.
     fn get_id(&self) -> NodeId {
         self.id
     }
 
+    /// Indicates whether the drone is currently in crashing behavior mode.
     fn get_crashing_behavior(&self) -> bool {
         self.crashing_behavior
     }
 
+    /// Provides mutable access to the set of flood packet identifiers that have been seen.
     fn get_seen_flood_ids(&mut self) -> &mut HashSet<String> {
         &mut self.seen_flood_ids
     }
 
+    /// Returns mutable access to the mapping of node IDs to their respective packet sender channels.
     fn get_packet_send(&mut self) -> &mut HashMap<NodeId, Sender<Packet>> {
         &mut self.packet_send
     }
 
+    /// Returns a reference to the packet receiver channel.
     fn get_packet_receiver(&self) -> &Receiver<Packet> {
         &self.packet_recv
     }
 
+    /// Provides mutable access to the random number generator used by the drone.
     fn get_random_generator(&mut self) -> &mut StdRng {
         &mut self.random_generator
     }
 
+    /// Returns a reference to the simulation controller event sender.
     fn get_sim_contr_send(&self) -> &Sender<DroneEvent> {
         &self.sim_contr_send
     }
 
+    /// Processes a routed packet by verifying its routing header and forwarding it appropriately.
+    ///
+    /// Returns `true` if the packet was handled (e.g. responded to with a NACK) such that no further
+    /// processing is needed, or `false` if the packet should continue being processed.
     fn handle_routed_packet(&mut self, packet: Packet) -> bool {
         if !self.verify_routing(&packet) {
             return false;
@@ -121,10 +132,6 @@ impl NetworkNode for Drone {
                 }
             }
             _ => {
-                // TODO: is this meant to work this way????
-                //  shouldn't the hop index be incremented in the forward_packet function??
-                //  before implementig this directly in the function be sure that there are no cases in which this is not the desired behaviour
-                //  if this gets implemented in the function, be sure to delete every place where the hop index is incremented before calling the function
                 let mut forward_packet = packet.clone();
                 forward_packet.routing_header.hop_index += 1;
 
@@ -134,6 +141,7 @@ impl NetworkNode for Drone {
         }
     }
 
+    /// Handles a command received from the simulation controller by executing the corresponding action.
     fn handle_command(&mut self, command: Command) {
         match command {
             Command::Drone(drone_command) => match drone_command {
@@ -148,6 +156,7 @@ impl NetworkNode for Drone {
 }
 
 impl wg_2024::drone::Drone for Drone {
+    /// Creates a new instance of a Drone with the given parameters.
     fn new(
         id: NodeId,
         controller_send: Sender<DroneEvent>,
@@ -170,7 +179,10 @@ impl wg_2024::drone::Drone for Drone {
         }
     }
 
-    /// Main event loop for the drone.
+    /// Executes the main event loop for the drone.
+    ///
+    /// The loop processes commands from the simulation controller and incoming packets until
+    /// a termination condition is met.
     fn run(&mut self) {
         while !self.should_exit {
             select_biased! {
@@ -191,6 +203,10 @@ impl wg_2024::drone::Drone for Drone {
 }
 
 impl Drone {
+    /// Verifies the routing header of a packet to ensure it is addressed to the current node.
+    ///
+    /// If the packet is misrouted, a NACK is generated and forwarded.
+    /// Returns `true` if the routing is valid, or `false` if a correction was needed.
     fn verify_routing(&mut self, packet: &Packet) -> bool {
         let index = packet.routing_header.hop_index;
         if self.id != packet.routing_header.hops[index] {
@@ -203,7 +219,10 @@ impl Drone {
         true
     }
 
-    // Handling a message fragment for a drone is very different from the behaviour that a client or a server would have
+    /// Handles a message fragment packet.
+    ///
+    /// Depending on the packet drop decision (based on PDR), the packet may be dropped (with a NACK sent)
+    /// or forwarded to the next hop by incrementing its routing header.
     fn handle_message_fragment(&mut self, packet: Packet) {
         if self.should_drop_packet() {
             // Send dropped event
@@ -245,11 +264,17 @@ impl Drone {
         self.forward_packet(forward_packet);
     }
 
+    /// Determines whether the packet should be dropped based on the current packet drop rate (PDR).
+    ///
+    /// Returns `true` if the packet is to be dropped, or `false` otherwise.
     fn should_drop_packet(&mut self) -> bool {
         let pdr_scaled = (self.pdr * 100.0) as i32;
         self.get_random_generator().gen_range(0..=100) < pdr_scaled
     }
 
+    /// Sets the packet drop rate (PDR) for the drone.
+    ///
+    /// If the provided `new_pdr` is not within the range `[0.0, 1.0]`, an error is logged and the PDR remains unchanged.
     fn set_pdr(&mut self, new_pdr: f32) {
         if new_pdr < 0.0 || new_pdr > 1.0 {
             log_error!(self.id, "invalid PDR value: {}", new_pdr);
@@ -258,6 +283,10 @@ impl Drone {
         self.pdr = new_pdr;
     }
 
+    /// Initiates the crash sequence for the drone.
+    ///
+    /// This method processes any remaining packets, updates the drone's state to indicate a crash,
+    /// and logs the crash events.
     fn crash(&mut self) {
         log_status!(self.id, "Starting crash sequence");
         self.crashing_behavior = true;
@@ -277,6 +306,7 @@ mod tests {
 
     use super::*;
 
+    /// Tests the creation of a Drone instance with the expected initial parameters.
     #[test]
     fn test_drone_creation() {
         let (controller_send, _) = crossbeam_channel::unbounded();
