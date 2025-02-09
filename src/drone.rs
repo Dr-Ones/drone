@@ -121,10 +121,6 @@ impl NetworkNode for Drone {
                 }
             }
             _ => {
-                // TODO: is this meant to work this way????
-                //  shouldn't the hop index be incremented in the forward_packet function??
-                //  before implementig this directly in the function be sure that there are no cases in which this is not the desired behaviour
-                //  if this gets implemented in the function, be sure to delete every place where the hop index is incremented before calling the function
                 let mut forward_packet = packet.clone();
                 forward_packet.routing_header.hop_index += 1;
 
